@@ -9,13 +9,13 @@ public class PhysicsWrld {
     static ArrayList<Ball> balls;
     static final double GRAVITY = 0.5; //locked
     static final double COEFFICIENT_OF_RESTITUTION = 0.725; //locked
-    static final double COEFFICIENT_OF_GROUND_FRICTION = 0.10; //0.10-0.15
-    static final double AIR_RESISTENCE_CONSTANT = 0.00005; //FIX
+    static final double COEFFICIENT_OF_GROUND_FRICTION = 0.1; //0.10-0.15
+    //static final double AIR_RESISTENCE_CONSTANT = 0.00005; //FIX
     public static void main(String[] args) {
         instantiateSim();
 
-        balls.add(new Ball(5, 25-0,450, 200, -77));
-        balls.add(new Ball(30, 450,200, 20, -75));
+        balls.add(new Ball(5, 450,250, 20, 0));
+        balls.add(new Ball(30, 400,350, 30, -20));
         //balls.add(new Ball(140, 10,280, 10000, 10000));
         screen.add(balls.get(0));
         screen.add(balls.get(1));
@@ -34,6 +34,7 @@ public class PhysicsWrld {
                     System.out.println("Vx: " + b.velocity.X);
                     System.out.println("Vy: " + b.velocity.Y);
                     System.out.println("X: " + b.getLocation());
+
                 }
             }
         };
@@ -74,6 +75,7 @@ public class PhysicsWrld {
 
             double frictionForce = b.getMass() * GRAVITY * COEFFICIENT_OF_GROUND_FRICTION;
             b.acceleration.X = (b.velocity.X > 0) ? -(frictionForce/b.getMass()) : frictionForce/b.getMass(); //may need to update to incorporate air resistence
+            //make friction AND OTHER FORCES incorporate mass 
         }
     }
     public static void instantiateSim() {
