@@ -1,9 +1,12 @@
 import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.awt.*;
 
 public class PhysicsWrld {
+    static DragListener drag;
     static JFrame gui;
     static JPanel screen;
     static ArrayList<Ball> balls;
@@ -13,12 +16,21 @@ public class PhysicsWrld {
     //static final double AIR_RESISTENCE_CONSTANT = 0.00005; //FIX
     public static void main(String[] args) {
         instantiateSim();
+        drag = new DragListener();
 
-        balls.add(new Ball(5, 450,250, 20, 0));
-        balls.add(new Ball(30, 400,350, 30, -20));
+        //balls.add(new Ball(5, 450,250, 40, 20));
+        //balls.add(new Ball(30, 400,350, 30, -20));
+
+        //balls.get(1).addMouseListener(drag);//
+        //balls.get(1).addMouseMotionListener(drag);//
         //balls.add(new Ball(140, 10,280, 10000, 10000));
-        screen.add(balls.get(0));
-        screen.add(balls.get(1));
+        //screen.add(balls.get(0));
+        //screen.add(balls.get(1));
+        for (int i = 0; i < 30; i ++) {
+            balls.add(new Ball());
+            screen.add(balls.get(i));
+        }
+
         //screen.add(balls.get(2));
 
         ActionListener taskPerformer = new ActionListener() {
@@ -29,6 +41,7 @@ public class PhysicsWrld {
                     b.move();
                     checkWallCollisions(b);
                     checkGroundFriction(b);
+                    Ball.checkBallCollision(balls.get(0), balls.get(1));
                     b.repaint();
 
                     System.out.println("Vx: " + b.velocity.X);
@@ -62,10 +75,11 @@ public class PhysicsWrld {
         //if vert speed is negligable, and ball is on ground, ball stops
 
         // [0.02*b.getMass()] Accomodates larger balls bouncing more and ignoring default 0.1 benchmark (5 mass standard (reference))
-        if (Math.abs(b.velocity.Y) < 0.02*b.getMass() && b.getLocation().getY() > screen.getHeight() - b.getHeight() - 5) {
-            b.velocity.Y = 0;
+        if (Math.abs(b.velocity.Y) < 0.02*b.getMass() && b.getLocation().getY() > 730) {
             b.acceleration.Y = 0;
-            b.setLocation(b.getX(), screen.getHeight() - b.getHeight() - 1);
+            b.velocity.Y = 0;
+            b.position = new Point(b.getX(), screen.getHeight() - b.getHeight() - 1);
+            b.setLocation(b.position);
 
             if (Math.abs(b.velocity.X) < 0.1) {
                 b.velocity.X = 0;
@@ -99,5 +113,45 @@ public class PhysicsWrld {
         gui.setVisible(true);
 
         balls = new ArrayList<>();
-    }       
+    }   
+    
+    
+    static class DragListener extends MouseInputAdapter  {
+        Point location;
+        MouseEvent pressed, released;
+
+        public void mousePressed(MouseEvent me)
+        {
+            Ball ball = (Ball)me.getComponent();
+            location = ball.getLocation(location);
+            pressed = me;
+
+            location = ball.getLocation(location);
+        }
+        public void mouseReleased(MouseEvent me)
+        {       
+            Ball ball = (Ball)me.getComponent(); 
+            ball.acceleration = new Vector(0, GRAVITY);
+        }
+
+        public void mouseDragged(MouseEvent me)
+        {
+            if (!SwingUtilities.isLeftMouseButton(me)) return; 
+            Ball ball = (Ball)me.getComponent();
+            (ball.getParent()).setComponentZOrder(ball, 0);
+            location = ball.getLocation(location);
+            int x = location.x - pressed.getX() + me.getX();
+            int y = (location.y - pressed.getY() + me.getY());   
+            // DeltaX/DeltaY = mouse Final pos - init.
+            // V = dX / dT (timer for t)
+
+            // F for drag is cont ---> a is f/m
+            // V = integral a dT (timer for t)
+            
+            ball.position = new Point(x, y); 
+            ball.velocity = new Vector(0, 0);
+            ball.acceleration = new Vector(0, 0);
+            ball.setLocation(x, y);
+        }
+    }
 }
